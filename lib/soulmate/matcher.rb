@@ -14,11 +14,11 @@ module Soulmate
       if !Soulmate.redis.exists(cachekey)
         interkeys = words.map { |w| "#{base}:#{w}" }
         Soulmate.redis.zinterstore(cachekey, interkeys)
-        Soulmate.redis.expire(cachekey, 10 * 60) # expire after 10 minutes
+        Soulmate.redis.expire(cachekey, 1) # expire after 10 minutes
       end
 
       ids = Soulmate.redis.zrevrange(cachekey, 0, options[:limit] - 1)
-      ids.size > 0 ? Soulmate.redis.hmget(database, *ids).map { |r| JSON.parse(r) } : []
+      ids.size > 0 ? Soulmate.redis.hmget(database, *ids).map { |r| JSON.parse(r) if r }.compact : []     # TODO Expire cachekey on deletion? => remove "if"
     end
   end
 end
